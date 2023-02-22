@@ -16,6 +16,10 @@ params = {
 
 class Equation:
     def __init__(self, params):
+        # sanity check
+        assert params["two_operators"] >= params["one_operator"]
+        
+        
         # Set root
         queue = []
         root = Node(random.choice(operators), 0)
@@ -44,7 +48,13 @@ class Equation:
             #     queue.append(right)
 
 
-            if random.random() < params[""]:
+            ops_check = random.random()
+            if ops_check < params["one_operator"]:
+                # Generate one op child and one val child, add op child to queue
+            else if ops_check < params["two_operators"]:
+                # Generate two op children, add both to queue
+            else:
+                # Generate two val children
 
 
             cur_node = queue.pop()
@@ -59,7 +69,10 @@ class Equation:
 
 
     def mutate(self):
-        pass
+        # Get a list of all the value nodes, and change a random one
+        equation = self.copy() # deep copy the tree
+        val_nodes = equation.traversal(ret="val")
+        # I'm not sure how the references would work here
 
     def crossover(self):
         pass
@@ -67,7 +80,10 @@ class Equation:
     def set_root(self, Node):
         self.root = Node
 
-    def evaluate(self, value):
+    # Post order traveral of the tree. Can be 
+    #    set to evaluate the equation at a certain
+    #    x value, or returns all of the 'value' nodes
+    def traversal(self, ret=None, value=None):
         pass
 
     def get_fitness(self):
