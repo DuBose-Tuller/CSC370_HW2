@@ -1,17 +1,7 @@
 import random
+import copy
 
 operators = ["+", "-", "*", "/"]
-
-
-params = {
-    "one_operator": 0.2,
-    "two_operators": 0.5,
-    "val_is_x": 0.25,
-    "min_val": -5,
-    "max_val": 5,
-    "max_depth": 3,
-    "is_real": False
-}
 
 
 class Equation:
@@ -30,35 +20,46 @@ class Equation:
         root = Node(random.choice(operators), 0)
         self.set_root(root)
         queue.append(root)
-        cur_node = queue.pop()
 
         while len(queue) > 0:
+            cur_node = queue.pop()
+
             ops_check = random.random()
             right = ""
             left  = ""
-            if ops_check < params["one_operator"]:
-                # Generate one op child and one val child, add op child to queue
-                right = Node(random.choice(operators))
-                left  = Node(randval)
-                queue.append(right)
-            elif ops_check < params["two_operators"]:
-                # Generate two op children, add both to queue
-                right = Node(random.choice(operators))
-                left  = Node(random.choice(operators))
-                queue.add(right)
-                queue.add(left)
-            else:
+            if cur_node.depth == params["max_depth"] or ops_check > params["two_operators"]:
                 # Generate two val children
-                right = Node(randval)
-                left  = Node(randval)
+                right = Node(randval, cur_node.depth + 1)
+                left  = Node(randval, cur_node.depth + 1)
+
+            elif ops_check < params["one_operator"]:
+                # Generate one op child and one val child, add op child to queue
+                #    randomize which order they come in
+                val_is_left = random.random() < 0.5
+                if val_is_left:
+                    right = Node(random.choice(operators), cur_node.depth + 1)
+                    left  = Node(randval, cur_node.depth + 1)
+                    queue.append(right)
+                else:
+                    left = Node(random.choice(operators), cur_node.depth + 1)
+                    right  = Node(randval, cur_node.depth + 1)
+                    queue.append(left)
+
+            else:
+                # Generate two op children, add both to queue
+                right = Node(random.choice(operators), cur_node.depth + 1)
+                left  = Node(random.choice(operators), cur_node.depth + 1)
+                queue.append(right)
+                queue.append(left)
                 
             
             cur_node.set_left(left)
             cur_node.set_right(right)
+        
 
-            cur_node = queue.pop()
-                   
 
+    # def generate_random(self, params):
+        
 
     def mutate(self):
         # Get a list of all the value nodes, and change a random one
@@ -72,16 +73,46 @@ class Equation:
     def set_root(self, Node):
         self.root = Node
 
-    # Post order traveral of the tree. Can be 
-    #    set to evaluate the equation at a certain
-    #    x value, or returns all of the 'value' nodes
-    # IDK if this is the right way to do this
-    def traversal(self, ret=None, value=None):
-        pass
+    def evaluate(self, x, node):
+        if node.value not in operators:
+            if node.value == "x":
+                return x
+            else:
+                return node.value
 
-    def get_fitness(self, x, y):
+        left = self.evaluate(x, node.left)
+        right = self.evaluate(x, node.right)
+ 
+        op = node.value
+        if op == "+":
+            return left + right
+        elif op == "-":
+            return left - right
+        elif op == "*":
+            return left * right
+        elif op == "/":
+            if right == 0: # Safe division
+                return 1
+            
+            return left / right
+        else:
+            raise Exception()
+
+
+    # MSE
+    def get_fitness(self, xs, ys):
         assert len(x) == len(y)
         total_error = 0
+
+        for (x, y) in zip(xs, ys):
+            error = y - self.evaluate(x)
+            total_error += error**2
+
+        return total_error/len(x)
+
+    def copy(self):
+        return copy.deepcopy(self)
+
         
 
 class Node:
@@ -105,7 +136,6 @@ class Node:
         return self.value
 
 
-def initialize(size, is_real, max_depth, threshold):
-    return [Equation(max_depth, is_real, threshold) for i in range(size)]
+
 
 
