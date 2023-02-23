@@ -19,6 +19,11 @@ class Equation:
         # sanity check
         assert params["two_operators"] >= params["one_operator"]
         
+        if params["is_real"]:
+            randval = random.uniform(params["min_val"], params["max_val"])
+        else:
+            randval = random.randint(params["min_val"], params["max_val"])
+        
         
         # Set root
         queue = []
@@ -28,44 +33,31 @@ class Equation:
         cur_node = queue.pop()
 
         while len(queue) > 0:
-            # if random.random() > op_thresh or cur_node.depth > max_depth:
-            #     # Generate values
-            #     if is_real:
-            #         if random.random() < x_thresh:
-            #             self.generate_children(cur_node, random.randrange(MIN_VAL, MAX_VAL), random.randrange(MIN_VAL, MAX_VAL))
-
-            #     else:
-            #         if random.random() < x_thresh:
-            #             left = Node(random.randint(MIN_VAL, MAX_VAL), cur_node.depth + 1)
-            #             right = Node(random.randint(MIN_VAL, MAX_VAL), cur_node.depth + 1)
-            #             cur_node.set_left(left)
-            #             cur_node.set_right(right)
-                
-            # else: 
-            #     # Generate operands
-            #     self.generate_children(cur_node, random.choice(operators), random.choice(operators))
-            #     queue.append(left)
-            #     queue.append(right)
-
-
             ops_check = random.random()
+            right = ""
+            left  = ""
             if ops_check < params["one_operator"]:
                 # Generate one op child and one val child, add op child to queue
+                right = Node(random.choice(operators))
+                left  = Node(randval)
+                queue.append(right)
             else if ops_check < params["two_operators"]:
                 # Generate two op children, add both to queue
+                right = Node(random.choice(operators))
+                left  = Node(random.choice(operators))
+                queue.add(right)
+                queue.add(left)
             else:
                 # Generate two val children
-
+                right = Node(randval)
+                left  = Node(randval)
+                
+            
+            cur_node.set_left(left)
+            cur_node.set_right(right)
 
             cur_node = queue.pop()
-            
-
-    def generate_children(cur_node, left_val, right_val):
-        left = Node(left_val, cur_node.depth + 1)
-        right = Node(right_val, cur_node.depth + 1)
-        cur_node.set_left(left)
-        cur_node.set_right(right)
-        
+                   
 
 
     def mutate(self):
@@ -83,11 +75,14 @@ class Equation:
     # Post order traveral of the tree. Can be 
     #    set to evaluate the equation at a certain
     #    x value, or returns all of the 'value' nodes
+    # IDK if this is the right way to do this
     def traversal(self, ret=None, value=None):
         pass
 
-    def get_fitness(self):
-        pass
+    def get_fitness(self, x, y):
+        assert len(x) = len(y)
+        total_error = 0
+        
 
 class Node:
     def __init__(self, value, depth):
