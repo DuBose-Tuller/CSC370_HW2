@@ -41,7 +41,7 @@ class Equation:
                 right = Node(random.choice(operators))
                 left  = Node(randval)
                 queue.append(right)
-            else if ops_check < params["two_operators"]:
+            elif ops_check < params["two_operators"]:
                 # Generate two op children, add both to queue
                 right = Node(random.choice(operators))
                 left  = Node(random.choice(operators))
@@ -80,7 +80,7 @@ class Equation:
         pass
 
     def get_fitness(self, x, y):
-        assert len(x) = len(y)
+        assert len(x) == len(y)
         total_error = 0
         
 
