@@ -15,7 +15,8 @@ def initialize(size, is_real, max_depth, threshold):
     return [Equation(params) for i in range(size)]
 
 eqn = Equation(params)
+print(len(eqn.nodes))
 eqn2 = eqn.copy()
 
-eqn2.left.value = 5
+eqn2.root.left.value = 5
 print("")

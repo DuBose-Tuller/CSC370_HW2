@@ -6,6 +6,8 @@ operators = ["+", "-", "*", "/"]
 
 class Equation:
     def __init__(self, params):
+        self.nodes = []
+
         # sanity check
         assert params["two_operators"] >= params["one_operator"]
         
@@ -30,7 +32,11 @@ class Equation:
             if cur_node.depth == params["max_depth"] or ops_check > params["two_operators"]:
                 # Generate two val children
                 right = Node(randval, cur_node.depth + 1)
+                self.nodes.append(right)
+                right.set_parent(cur_node)
                 left  = Node(randval, cur_node.depth + 1)
+                self.nodes.append(left)
+                left.set_parent(cur_node)
 
             elif ops_check < params["one_operator"]:
                 # Generate one op child and one val child, add op child to queue
@@ -38,40 +44,56 @@ class Equation:
                 val_is_left = random.random() < 0.5
                 if val_is_left:
                     right = Node(random.choice(operators), cur_node.depth + 1)
-                    left  = Node(randval, cur_node.depth + 1)
+                    self.nodes.append(right)
+                    right.set_parent(cur_node)
                     queue.append(right)
+
+                    left  = Node(randval, cur_node.depth + 1)
+                    self.nodes.append(left)
+                    left.set_parent(cur_node)
+                    
                 else:
                     left = Node(random.choice(operators), cur_node.depth + 1)
-                    right  = Node(randval, cur_node.depth + 1)
+                    self.nodes.append(left)
+                    left.set_parent(cur_node)
                     queue.append(left)
+
+                    right  = Node(randval, cur_node.depth + 1)
+                    self.nodes.append(right)
+                    right.set_parent(cur_node)
 
             else:
                 # Generate two op children, add both to queue
                 right = Node(random.choice(operators), cur_node.depth + 1)
-                left  = Node(random.choice(operators), cur_node.depth + 1)
+                self.nodes.append(right)
+                right.set_parent(cur_node)
                 queue.append(right)
+
+                left  = Node(random.choice(operators), cur_node.depth + 1)
+                self.nodes.append(left)
+                left.set_parent(cur_node)
                 queue.append(left)
                 
             
             cur_node.set_left(left)
             cur_node.set_right(right)
         
-
-
-    # def generate_random(self, params):
         
-
-    def mutate(self):
+    def mutate(self, params):
         # Get a list of all the value nodes, and change a random one
         equation = self.copy() # deep copy the tree
-        val_nodes = equation.traversal(ret="val")
-        # I'm not sure how the references would work here
+        mutation_point = equation.randNode()
+        new_subtree = Equation(params)
+
 
     def crossover(self):
         pass
 
     def set_root(self, Node):
         self.root = Node
+
+    def randNode(self):
+        return random.choice(self.nodes)
 
     def evaluate(self, x, node):
         if node.value not in operators:
