@@ -170,7 +170,7 @@ class Equation:
 
     # MSE
     def get_fitness(self, xs, ys):
-        assert len(x) == len(y)
+        assert len(xs) == len(ys)
         total_error = 0
 
         for (x, y) in zip(xs, ys):
