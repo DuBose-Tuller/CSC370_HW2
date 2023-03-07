@@ -1,0 +1,12 @@
+Diversity of Population: https://link.springer.com/article/10.1007/s11047-014-9416-y Section 3.1
+-use a heuristic for tree isomorphism with <depth, terminals, nonterminals>
+    -at each generation, regenerate trees that have a 'shape' already represented in the population
+-perform crossover only above a certain 'edit distance' threshold
+    -count number of overlapped nodes that are different
+-Some kind of entropy measure on the evaluations
+
+Improving Crossover
+-don't do it on parents with the same fitness (Gustafson 2005)
+-pick a random spot in parent 1, but try all of the possible spots in parent 2, and keep the one with the best fitness (Majeed and Ryan 2007)
+    -or really any kind of "try a bunch, keep the best" method
+    
