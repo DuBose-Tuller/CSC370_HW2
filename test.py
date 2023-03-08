@@ -1,7 +1,9 @@
 from Equation import *
+import random
+import pandas as pd
+from tqdm import tqdm
 
-
-params = {
+new_eqn_params = {
     "one_operator": 0.3,
     "two_operators": 0.6,
     "val_is_x": 0.4,
@@ -12,10 +14,47 @@ params = {
     "start_depth": 0,
 }
 
+
+dataset1 = pd.read_csv("dataset1.csv", header="infer")
+xs = list(dataset1["x"])
+ys = list(dataset1["f(x)"])
+
 def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
-first_gen = initialize(2, params)
-next_gen = first_gen[0].crossover(first_gen[1])
+NUM_GENERATIONS = 20
+SIZE = 200
+MUTATION_PROB = 0.1
+CROSSOVER_PROB = 0.6
 
-print("")
+current_gen = initialize(SIZE, new_eqn_params)
+best_in_each_gen = []
+
+for t in tqdm(range(NUM_GENERATIONS)):
+    weights = []
+    next_gen = []
+
+    for x in current_gen:
+        weights.append(1/x.get_fitness(xs, ys))
+
+    for j in range(SIZE):
+        parent1 = random.choices(current_gen, weights)[0]
+        flip = random.random()
+        if flip <= MUTATION_PROB:  # mutation
+            next_gen.append(parent1.mutate(new_eqn_params))
+        elif flip <= CROSSOVER_PROB + MUTATION_PROB:  # crossover
+            parent2 = random.choices(current_gen, weights)[0]
+            next_gen.extend(parent1.crossover(parent2))
+        else:  # clone
+            next_gen.append(parent1)
+
+    current_gen = next_gen   
+
+    best_fitness = max(weights)
+    best_in_each_gen.append(best_fitness)
+    
+
+
+# Evaluate the MSE of each of the best equations in each gen
+for eqn in best_in_each_gen:
+    print(eqn)

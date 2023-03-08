@@ -97,14 +97,14 @@ class Equation:
         start_depth = mutation_point.depth
         params["start_depth"] = start_depth
 
-        new_subtree = Equation(params)
+        new_subtree = Equation(params).root
         parent = mutation_point.parent
         new_subtree.parent = parent
 
         if parent.left == mutation_point:
-            parent.left = new_subtree.root
+            parent.left = new_subtree
         else:
-            parent.right = new_subtree.root
+            parent.right = new_subtree
 
         return equation
 
@@ -177,7 +177,7 @@ class Equation:
             error = y - self.evaluate(x, self.root)
             total_error += error**2
 
-        return total_error/len(x)
+        return total_error/len(xs)
 
     def copy(self):
         return copy.deepcopy(self)
