@@ -9,4 +9,7 @@ Improving Crossover
 -don't do it on parents with the same fitness (Gustafson 2005)
 -pick a random spot in parent 1, but try all of the possible spots in parent 2, and keep the one with the best fitness (Majeed and Ryan 2007)
     -or really any kind of "try a bunch, keep the best" method
-    
+
+Reducing Bloat (section 4)
+-Automatically assign a low fitness to individuals with a lot of nodes (Poli 2003)
+- 

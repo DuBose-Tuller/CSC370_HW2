@@ -22,8 +22,8 @@ ys = list(dataset1["f(x)"])
 def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
-NUM_GENERATIONS = 20
-SIZE = 200
+NUM_GENERATIONS = 5
+SIZE = 1000
 MUTATION_PROB = 0.1
 CROSSOVER_PROB = 0.6
 
