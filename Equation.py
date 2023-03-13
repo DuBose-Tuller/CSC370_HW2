@@ -27,8 +27,6 @@ class Equation:
             cur_node = queue.pop()
 
             ops_check = random.random()
-            # right = ""
-            # left  = ""
             if cur_node.depth == params["max_depth"]  or ops_check > params["two_operators"]:
                 # Generate two val children
                 right = self.generate_val_node(params, cur_node.depth + 1, randval)
@@ -168,8 +166,7 @@ class Equation:
             raise Exception()
 
 
-    # MSE
-    def get_fitness(self, xs, ys):
+    def get_MSE(self, xs, ys):
         assert len(xs) == len(ys)
         total_error = 0
 
@@ -204,7 +201,14 @@ class Node:
     def get_value(self):
         return self.value
 
-
+    def __repr__(self):
+        ret = "\t"*self.depth+repr(self.value)+"\n"
+        if not self.left:
+            return ret
+        
+        ret += self.left.__repr__()
+        ret += self.right.__repr__()
+        return ret
 
 
 

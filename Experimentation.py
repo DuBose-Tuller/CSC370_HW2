@@ -22,10 +22,11 @@ ys = list(dataset1["f(x)"])
 def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
-NUM_GENERATIONS = 5
-SIZE = 1000
+NUM_GENERATIONS = 2
+SIZE = 10
 MUTATION_PROB = 0.1
 CROSSOVER_PROB = 0.6
+PARSIMONY = 5
 
 current_gen = initialize(SIZE, new_eqn_params)
 best_in_each_gen = []
@@ -35,7 +36,9 @@ for t in tqdm(range(NUM_GENERATIONS)):
     next_gen = []
 
     for x in current_gen:
-        weights.append(1/x.get_fitness(xs, ys))
+        mse = x.get_MSE(xs, ys)
+        reg_penalty = PARSIMONY * len(x.nodes)
+        weights.append(1/(mse + reg_penalty))
 
     for j in range(SIZE):
         parent1 = random.choices(current_gen, weights)[0]
@@ -56,5 +59,5 @@ for t in tqdm(range(NUM_GENERATIONS)):
 
 
 # Evaluate the MSE of each of the best equations in each gen
-for eqn in best_in_each_gen:
-    print(eqn)
+for score in best_in_each_gen:
+    print(1/score)
