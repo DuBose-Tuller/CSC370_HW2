@@ -81,7 +81,8 @@ class Equation:
         x_check = random.random()
 
         if x_check < params["val_is_x"]:
-            node = Node("x", depth)
+            var = random.choice(params["variables"])
+            node = Node(var, depth)
         else: 
             node = Node(randval(params["min_val"], params["max_val"]), depth)
 
@@ -166,7 +167,7 @@ class Equation:
             raise Exception()
 
 
-    def get_MSE(self, xs, ys):
+    def set_MSE(self, xs, ys, set=True):
         assert len(xs) == len(ys)
         total_error = 0
 
@@ -174,7 +175,10 @@ class Equation:
             error = y - self.evaluate(x, self.root)
             total_error += error**2
 
-        return total_error/len(xs)
+        if set:
+            self.MSE = total_error/len(xs)
+        else:
+            return total_error/len(xs)
 
     def copy(self):
         return copy.deepcopy(self)
