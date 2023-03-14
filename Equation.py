@@ -1,5 +1,6 @@
 import random
 import copy
+import numpy as np
 
 operators = ["+", "-", "*", "/"]
 
@@ -83,12 +84,20 @@ class Equation:
         if x_check < params["val_is_x"]:
             var = random.choice(params["variables"])
             node = Node(var, depth)
+            # node = Node("x", depth)
         else: 
             node = Node(randval(params["min_val"], params["max_val"]), depth)
 
         return node
-     
-    def mutate(self, params):
+
+    def mutate(self, params, prob_regrow=0.3):
+        regrow_check = random.random()
+        if regrow_check < prob_regrow:
+            return self.mutate_regrow(params)
+        else:
+            return self.mutate_change_val(params)
+
+    def mutate_regrow(self, params):
         # Get a list of all the value nodes, and change a random one
         equation = self.copy() # deep copy the tree
         mutation_point = random.choice(equation.nodes)
@@ -105,6 +114,22 @@ class Equation:
         else:
             parent.right = new_subtree
 
+        return equation
+    
+    def mutate_change_val(self, params):
+        # Get a list of all the value nodes, and change a random one
+        equation = self.copy() # deep copy the tree
+        mutation_point = random.choice(equation.nodes)
+        if mutation_point.value in operators:
+            mutation_point.value = random.choice(operators)
+        else:
+            if params["is_real"]:
+                randval = random.uniform
+            else:
+                randval = random.randint
+            
+            mutation_point.value = randval(params["min_val"], params["max_val"])
+        
         return equation
 
 
@@ -133,6 +158,7 @@ class Equation:
             parent2.right = child1_cross
 
         return [child1, child2]
+        #return child1
 
 
     def set_root(self, Node):
@@ -141,15 +167,16 @@ class Equation:
     def randNode(self):
         return random.choice(self.nodes)
 
-    def evaluate(self, x, node):
+    def evaluate(self, inputs, variables, node):
         if node.value not in operators:
-            if node.value == "x":
-                return x
+            for (i, var) in enumerate(variables):
+                if node.value == var:
+                    return inputs[i]
             else:
                 return node.value
 
-        left = self.evaluate(x, node.left)
-        right = self.evaluate(x, node.right)
+        left = self.evaluate(inputs, variables, node.left)
+        right = self.evaluate(inputs, variables, node.right)
  
         op = node.value
         if op == "+":
@@ -167,18 +194,18 @@ class Equation:
             raise Exception()
 
 
-    def set_MSE(self, xs, ys, set=True):
-        assert len(xs) == len(ys)
+    def set_MSE(self, inputs, outputs, variables = ["x"], set=True):
+        assert len(inputs) == len(outputs) and len(inputs[0]) == len(variables)
         total_error = 0
 
-        for (x, y) in zip(xs, ys):
-            error = y - self.evaluate(x, self.root)
+        for (ins, out) in zip(inputs, outputs):
+            error = out - self.evaluate(ins, variables, self.root)
             total_error += error**2
 
         if set:
-            self.MSE = total_error/len(xs)
+            self.MSE = total_error/len(inputs)
         else:
-            return total_error/len(xs)
+            return total_error/len(inputs)
 
     def copy(self):
         return copy.deepcopy(self)

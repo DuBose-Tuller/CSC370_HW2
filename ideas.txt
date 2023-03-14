@@ -12,7 +12,7 @@ Improving Crossover
 
 Reducing Bloat (section 4)
 -Automatically assign a low fitness to individuals with a lot of nodes (Poli 2003)
-- 
 
 Selection Algorithms
 -currently we are doing roulette
+- we may also want to inject a handful of random trees (potentailly by replacing the worse ones)
