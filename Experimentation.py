@@ -22,19 +22,23 @@ new_eqn_params = {
 
 
 dataset2 = pd.read_csv("dataset2.csv", header="infer")
-print(dataset2.columns)
 inputs = np.array(dataset2[["x1", "x2", "x3"]])
+
+# Scale x1 and x2 down
+inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (-1, +1))
+inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (-1, +1))
+
 outputs = np.array(dataset2["y"])
 x_train, x_test, y_train, y_test = train_test_split(inputs, outputs, test_size = 0.25)
 
 def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
-NUM_GENERATIONS = 15
-SIZE = 25
+NUM_GENERATIONS = 20
+SIZE = 100
 MUTATION_PROB = 0.3
 CROSSOVER_PROB = 0.4
-PARSIMONY = 5
+PARSIMONY = 1
 
 current_gen = initialize(SIZE, new_eqn_params)
 best_in_each_gen = []
@@ -58,8 +62,8 @@ for t in tqdm(range(NUM_GENERATIONS)):
             next_gen.append(parent1.mutate(new_eqn_params))
         elif flip <= CROSSOVER_PROB + MUTATION_PROB:  # crossover
             parent2 = random.choices(current_gen, weights)[0]
-            next_gen.extend(parent1.crossover(parent2))
-            # next_gen.append(parent1.crossover(parent2))
+            #next_gen.extend(parent1.crossover(parent2))
+            next_gen.append(parent1.crossover(parent2)[0])
         else:  # clone
             next_gen.append(parent1)
 
