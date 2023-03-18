@@ -7,6 +7,7 @@ Diversity of Population: https://link.springer.com/article/10.1007/s11047-014-94
 
 Improving Crossover
 -don't do it on parents with the same fitness (Gustafson 2005)
+-don't do on two parents that have similar values evaluated on a small subset of the data (Uy 2009)
 -pick a random spot in parent 1, but try all of the possible spots in parent 2, and keep the one with the best fitness (Majeed and Ryan 2007)
     -or really any kind of "try a bunch, keep the best" method
 
@@ -14,5 +15,5 @@ Reducing Bloat (section 4)
 -Automatically assign a low fitness to individuals with a lot of nodes (Poli 2003)
 
 Selection Algorithms
--currently we are doing roulette
+-currently we are doing tournament style, but each crossover operation can include many offspring
 - we may also want to inject a handful of random trees (potentailly by replacing the worse ones)

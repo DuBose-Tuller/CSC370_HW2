@@ -90,7 +90,7 @@ class Equation:
 
         return node
 
-    def mutate(self, params, prob_regrow=0.3):
+    def mutate(self, params, prob_regrow=0.1):
         regrow_check = random.random()
         if regrow_check < prob_regrow:
             return self.mutate_regrow(params)
@@ -133,32 +133,38 @@ class Equation:
         return equation
 
 
-    def crossover(self, other):
+    def crossover(self, other, brood=1):
         assert(type(other) == Equation)
 
-        child1 = self.copy()
-        child2 = other.copy()
+        children = []
 
-        child1_cross = random.choice(child1.nodes)
-        child2_cross = random.choice(child2.nodes)
+        for i in range(brood):
+            child1 = self.copy()
+            child2 = other.copy()
 
-        parent1 = child1_cross.parent
-        parent2 = child2_cross.parent
-        child2_cross.parent = parent1
-        child1_cross.parent = parent2
+            child1_cross = random.choice(child1.nodes)
+            child2_cross = random.choice(child2.nodes)
 
-        if parent1.left == child1_cross:
-            parent1.left = child2_cross
-        else:
-            parent1.right = child2_cross
+            # Swap the trees at the specified points
+            parent1 = child1_cross.parent
+            parent2 = child2_cross.parent
+            child2_cross.parent = parent1
+            child1_cross.parent = parent2
 
-        if parent2.left == child2_cross:
-            parent2.left = child1_cross
-        else:
-            parent2.right = child1_cross
+            if parent1.left == child1_cross:
+                parent1.left = child2_cross
+            else:
+                parent1.right = child2_cross
 
-        return [child1, child2]
-        #return child1
+            if parent2.left == child2_cross:
+                parent2.left = child1_cross
+            else:
+                parent2.right = child1_cross
+
+            children.append(child1)
+            children.append(child2)
+
+        return children
 
 
     def set_root(self, Node):
