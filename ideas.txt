@@ -21,3 +21,6 @@ Selection Algorithms
 Dealing with the dataset:
 -Run for a few generations on a small subset of the dataset, then slowly expose it to more of the data
 -other forms of scaling/normalization
+
+Selection Pressure:
+-maybe modify how we are weighting the dataset by 1/(MSE+PARSIMONY)

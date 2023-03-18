@@ -28,7 +28,7 @@ class Equation:
             cur_node = queue.pop()
 
             ops_check = random.random()
-            if cur_node.depth == params["max_depth"]  or ops_check > params["two_operators"]:
+            if cur_node.depth >= params["max_depth"]  or ops_check > params["two_operators"]:
                 # Generate two val children
                 right = self.generate_val_node(params, cur_node.depth + 1, randval)
                 self.nodes.append(right)

@@ -20,18 +20,18 @@ outputs = np.array(dataset2["y"])
 VARS = ["x", "y", "z"]
 
 # Scale stuff
-# inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (0, 100))
-# inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (0, 100))
-# inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (0, 100))
+inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (0, 100))
+inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (0, 100))
+inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (0, 100))
 
 
 new_eqn_params = {
     "one_operator": 0.3,
     "two_operators": 0.7,
-    "val_is_x": 0.4,
-    "min_val": -5,
+    "val_is_x": 0.5,
+    "min_val": 0.1,
     "max_val": 5,
-    "max_depth": 5,
+    "max_depth": 3,
     "is_real": True,
     "start_depth": 0,
     "variables": VARS,
@@ -43,12 +43,14 @@ def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
 NUM_GENERATIONS = 10
-SIZE = 25
-MUTATION_PROB = 0.1
-CROSSOVER_PROB = 0.6
-PARSIMONY = 1
-NUM_CONTESTANTS = 4
-RANDOM_INJECTION = 0.1
+SIZE = 250
+MUTATION_PROB = 0.15
+CROSSOVER_PROB = 0.5
+PARSIMONY = 1 # TODO fix so that it changes each generation as the MSE changes order of magnitude
+NUM_CONTESTANTS = 7
+RANDOM_INJECTION = 0.15
+SEMANTIC_THRESHOLD = 0.1
+SEMANTIC_PROP = 0.05
 
 current_gen = initialize(SIZE, new_eqn_params)
 best_in_each_gen = []
@@ -63,8 +65,8 @@ def calculate_percent_diff(parent, candidate, prop=1):
     parent_vals = np.array([parent.evaluate(x, VARS, parent.root) for x in sample_in])
     candidate_vals = np.array([candidate.evaluate(x, VARS, candidate.root) for x in sample_in])
 
-    mean_diff = np.mean(np.abs((parent_vals-candidate_vals))/np.abs(parent_vals))*100
-    print(f"Mean difference: {mean_diff}")
+    parent_vals[parent_vals == 0] = 1 # safe division TODO improve
+    mean_diff = np.mean(np.abs((parent_vals-candidate_vals))/np.abs(parent_vals))
     return mean_diff
 
 for t in tqdm(range(NUM_GENERATIONS)):
@@ -86,16 +88,23 @@ for t in tqdm(range(NUM_GENERATIONS)):
             next_gen.append(parent1.mutate(new_eqn_params))
         elif flip <= CROSSOVER_PROB + MUTATION_PROB:  # crossover
             parent2 = random.choices(current_gen, weights)[0]
-            semantics = calculate_percent_diff(parent1, parent2, prop=0.0001)
+
+            # Ensure that the second parent isn't too similar to the first
+            semantics = calculate_percent_diff(parent1, parent2, prop=SEMANTIC_PROP)
+            while semantics < SEMANTIC_THRESHOLD:
+                print("Diversity Fail!")
+                parent2 = random.choices(current_gen, weights)[0]
+                semantics = calculate_percent_diff(parent1, parent2, prop=SEMANTIC_PROP)
 
             next_gen.extend(parent1.crossover(parent2))
         else:  # clone
             next_gen.append(parent1)
 
+
     # Perform the selection tournament
     # TODO: it's currently based off of only MSE, maybe fix to include regularization
     selected = []
-    for j in range(SIZE):
+    for j in tqdm(range(SIZE)):
         if j < SIZE * RANDOM_INJECTION:
             new_rand_eqn = Equation(new_eqn_params)
             new_rand_eqn.set_MSE(x_train, y_train, variables = VARS)
@@ -109,7 +118,7 @@ for t in tqdm(range(NUM_GENERATIONS)):
 
     # DEBUG: get this generation's best individual
     best_eqn = min(current_gen, key=lambda t: t.MSE)
-    print(f"After Generation {t}, the best equation is...\n{best_eqn.root}\nIt has an MSE of {x.MSE}")
+    print(f"After Generation {t}, the best equation is...\n{best_eqn.root}\nIt has an MSE of {x.MSE} which has {int(np.log10(x.MSE)//1)} digits.")
     
 
 print(f"Final result: \n{best_eqn.root}\nMSE: {best_eqn.set_MSE(x_test, y_test, variables = VARS, set=False)}")
