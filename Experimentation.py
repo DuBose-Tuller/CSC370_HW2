@@ -7,31 +7,31 @@ from sklearn.model_selection import train_test_split
 
 
 # Uncomment for dataset 1
-dataset1 = pd.read_csv("dataset1.csv", header="infer")
-inputs = np.array(dataset1["x"]).reshape(-1, 1) # dataset needs to be 2D
-outputs = np.array(dataset1["f(x)"])
-VARS = ["x"]
+# dataset1 = pd.read_csv("dataset1.csv", header="infer")
+# inputs = np.array(dataset1["x"]).reshape(-1, 1) # dataset needs to be 2D
+# outputs = np.array(dataset1["f(x)"])
+# VARS = ["x"]
 
 # Uncomment for dataset 2
-# dataset2 = pd.read_csv("dataset2.csv", header="infer")
-# inputs = np.array(dataset2[["x1", "x2", "x3"]])
-# outputs = np.array(dataset2["y"])
-# VARS = ["x", "y", "z"]
+dataset2 = pd.read_csv("dataset2.csv", header="infer")
+inputs = np.array(dataset2[["x1", "x2", "x3"]])
+outputs = np.array(dataset2["y"])
+VARS = ["x", "y", "z"]
 
-# # Scale stuff
-# inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (0, 100))
-# inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (0, 100))
-# inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (0, 100))
+# Scale stuff
+inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (0, 10))
+inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (0, 100))
+# inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (0, 10))
 
 
 new_eqn_params = {
     "one_operator": 0.3,
     "two_operators": 0.7,
     "val_is_x": 0.5,
-    "min_val": -5,
-    "max_val": 5,
-    "max_depth": 3,
-    "is_real": False,
+    "min_val": 0,
+    "max_val": 100,
+    "max_depth": 1,
+    "is_real": True,
     "start_depth": 0,
     "variables": VARS,
 }
@@ -41,25 +41,25 @@ x_train, x_test, y_train, y_test = train_test_split(inputs, outputs, test_size =
 def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
-NUM_GENERATIONS = 10
+NUM_GENERATIONS = 5
 SIZE = 100
-MUTATION_PROB = 0.15
-CROSSOVER_PROB = 0.5
+MUTATION_PROB = 0.2
+CROSSOVER_PROB = 0.65
 PARSIMONY = 8 # TODO fix so that it changes each generation as the MSE changes order of magnitude
-NUM_CONTESTANTS = 4
-RANDOM_INJECTION = 0.15
-SEMANTIC_THRESHOLD = 0.00000001
-SEMANTIC_PROP = 0.0001
+NUM_CONTESTANTS = 7 # 1 turns it off
+RANDOM_INJECTION = 0.1 
+SEMANTIC_THRESHOLD = -1 # 0 prevents exact duplicates
+SEMANTIC_PROP = 0.01
 
 current_gen = initialize(SIZE, new_eqn_params)
 best_in_each_gen = []
 
 
 def calculate_percent_diff(parent, candidate, prop=1):
-    indices = np.arange(len(outputs))
+    indices = np.arange(len(y_train))
     np.random.shuffle(indices)
-    indices = indices[:int(len(outputs)*prop)]
-    sample_in = inputs[indices]
+    indices = indices[:int(len(y_train)*prop)]
+    sample_in = x_train[indices]
 
     parent_vals = np.array([parent.evaluate(x, VARS, parent.root) for x in sample_in])
     candidate_vals = np.array([candidate.evaluate(x, VARS, candidate.root) for x in sample_in])
@@ -77,11 +77,12 @@ for t in tqdm(range(NUM_GENERATIONS)):
         x.set_MSE(x_train, y_train, variables = VARS)
         reg_penalty = PARSIMONY * len(x.nodes)
         fitness = x.MSE + reg_penalty
-        weights.append(1/fitness)
+        weights.append(fitness**2)
 
     # Create the next gen
     for x in tqdm(current_gen):
         parent1 = random.choices(current_gen, weights)[0]
+        #parent1 = x
         flip = random.random()
         if flip <= MUTATION_PROB:  # mutation
             next_gen.append(parent1.mutate(new_eqn_params))
@@ -90,12 +91,14 @@ for t in tqdm(range(NUM_GENERATIONS)):
 
             # Ensure that the second parent isn't too similar to the first
             semantics = calculate_percent_diff(parent1, parent2, prop=SEMANTIC_PROP)
+            # while semantics < np.log10(parent2.MSE)/100: # More stringent for larger MSE values
             while semantics < SEMANTIC_THRESHOLD:
                 print("Diversity Fail!")
                 parent2 = random.choices(current_gen, weights)[0]
                 semantics = calculate_percent_diff(parent1, parent2, prop=SEMANTIC_PROP)
 
             next_gen.extend(parent1.crossover(parent2))
+            #next_gen.append(parent1.crossover(parent2)[0])
         else:  # clone
             next_gen.append(parent1)
 
@@ -104,7 +107,8 @@ for t in tqdm(range(NUM_GENERATIONS)):
     # TODO: it's currently based off of only MSE, maybe fix to include regularization
     # TODO: prevent some of the same equations from being overly resampled
     selected = []
-    for j in tqdm(range(SIZE)):
+    selected.append(min(next_gen, key=lambda t: t.MSE)) # auto include the single best
+    for j in tqdm(range(SIZE-1)):
         if j < SIZE * RANDOM_INJECTION:
             new_rand_eqn = Equation(new_eqn_params)
             new_rand_eqn.set_MSE(x_train, y_train, variables = VARS)
@@ -115,6 +119,9 @@ for t in tqdm(range(NUM_GENERATIONS)):
             selected.append(min(contestants, key=lambda t: t.MSE))
 
     current_gen = selected   
+
+    # Uncomment for no tournament
+    # current_gen = next_gen
 
     # DEBUG: get this generation's best individual
     best_eqn = min(current_gen, key=lambda t: t.MSE)

@@ -24,9 +24,11 @@ Dealing with the dataset:
 
 Selection Pressure:
 -maybe modify how we are weighting the dataset by 1/(MSE+PARSIMONY)
+-maybe not even MSE??!?!?
 
 Overfitting:
--
+-?
 
 Changes over time:
 -focus more on mutation rather than crossover/diversity as we converge towards the solution
+-implemented: semantic pressure eases with the log of the MSE
