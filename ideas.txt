@@ -17,3 +17,7 @@ Reducing Bloat (section 4)
 Selection Algorithms
 -currently we are doing tournament style, but each crossover operation can include many offspring
 - we may also want to inject a handful of random trees (potentailly by replacing the worse ones)
+
+Dealing with the dataset:
+-Run for a few generations on a small subset of the dataset, then slowly expose it to more of the data
+-other forms of scaling/normalization

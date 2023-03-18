@@ -133,36 +133,33 @@ class Equation:
         return equation
 
 
-    def crossover(self, other, brood=1):
+    def crossover(self, other):
         assert(type(other) == Equation)
 
         children = []
+        child1 = self.copy()
+        child2 = other.copy()
+        child1_cross = random.choice(child1.nodes)
+        child2_cross = random.choice(child2.nodes)      
 
-        for i in range(brood):
-            child1 = self.copy()
-            child2 = other.copy()
+        # Swap the trees at the specified points
+        parent1 = child1_cross.parent
+        parent2 = child2_cross.parent
+        child2_cross.parent = parent1
+        child1_cross.parent = parent2
 
-            child1_cross = random.choice(child1.nodes)
-            child2_cross = random.choice(child2.nodes)
+        if parent1.left == child1_cross:
+            parent1.left = child2_cross
+        else:
+            parent1.right = child2_cross
 
-            # Swap the trees at the specified points
-            parent1 = child1_cross.parent
-            parent2 = child2_cross.parent
-            child2_cross.parent = parent1
-            child1_cross.parent = parent2
+        if parent2.left == child2_cross:
+            parent2.left = child1_cross
+        else:
+            parent2.right = child1_cross
 
-            if parent1.left == child1_cross:
-                parent1.left = child2_cross
-            else:
-                parent1.right = child2_cross
-
-            if parent2.left == child2_cross:
-                parent2.left = child1_cross
-            else:
-                parent2.right = child1_cross
-
-            children.append(child1)
-            children.append(child2)
+        children.append(child1)
+        children.append(child2)
 
         return children
 

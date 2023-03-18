@@ -8,21 +8,21 @@ from sklearn.model_selection import train_test_split
 # TODO fix issue where it stops on the last eval
 
 # Uncomment for dataset 1
-dataset1 = pd.read_csv("dataset1.csv", header="infer")
-inputs = np.array(dataset1["x"]).reshape(-1, 1) # dataset needs to be 2D
-outputs = np.array(dataset1["f(x)"])
-VARS = ["x"]
+# dataset1 = pd.read_csv("dataset1.csv", header="infer")
+# inputs = np.array(dataset1["x"]).reshape(-1, 1) # dataset needs to be 2D
+# outputs = np.array(dataset1["f(x)"])
+# VARS = ["x"]
 
 # Uncomment for dataset 2
-# dataset2 = pd.read_csv("dataset2.csv", header="infer")
-# inputs = np.array(dataset2[["x1", "x2", "x3"]])
-# outputs = np.array(dataset2["y"])
-# VARS = ["x", "y", "z"]
+dataset2 = pd.read_csv("dataset2.csv", header="infer")
+inputs = np.array(dataset2[["x1", "x2", "x3"]])
+outputs = np.array(dataset2["y"])
+VARS = ["x", "y", "z"]
 
-# # Scale stuff
+# Scale stuff
 # inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (0, 100))
 # inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (0, 100))
-# inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (-1, +1))
+# inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (0, 100))
 
 
 new_eqn_params = {
@@ -31,8 +31,8 @@ new_eqn_params = {
     "val_is_x": 0.4,
     "min_val": -5,
     "max_val": 5,
-    "max_depth": 2,
-    "is_real": False,
+    "max_depth": 5,
+    "is_real": True,
     "start_depth": 0,
     "variables": VARS,
 }
@@ -42,17 +42,30 @@ x_train, x_test, y_train, y_test = train_test_split(inputs, outputs, test_size =
 def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
-NUM_GENERATIONS = 25
+NUM_GENERATIONS = 10
 SIZE = 25
-MUTATION_PROB = 0.3
-CROSSOVER_PROB = 0.4
-PARSIMONY = 8
-NUM_CONTESTANTS = 2
+MUTATION_PROB = 0.1
+CROSSOVER_PROB = 0.6
+PARSIMONY = 1
+NUM_CONTESTANTS = 4
 RANDOM_INJECTION = 0.1
-BROOD_SIZE = 1
 
 current_gen = initialize(SIZE, new_eqn_params)
 best_in_each_gen = []
+
+
+def calculate_percent_diff(parent, candidate, prop=1):
+    indices = np.arange(len(outputs))
+    np.random.shuffle(indices)
+    indices = indices[:int(len(outputs)*prop)]
+    sample_in = inputs[indices]
+
+    parent_vals = np.array([parent.evaluate(x, VARS, parent.root) for x in sample_in])
+    candidate_vals = np.array([candidate.evaluate(x, VARS, candidate.root) for x in sample_in])
+
+    mean_diff = np.mean(np.abs((parent_vals-candidate_vals))/np.abs(parent_vals))*100
+    print(f"Mean difference: {mean_diff}")
+    return mean_diff
 
 for t in tqdm(range(NUM_GENERATIONS)):
     weights = []
@@ -66,15 +79,16 @@ for t in tqdm(range(NUM_GENERATIONS)):
         weights.append(1/fitness)
 
     # Create the next gen
-    for j in range(len(current_gen)):
+    for _ in tqdm(current_gen):
         parent1 = random.choices(current_gen, weights)[0]
         flip = random.random()
         if flip <= MUTATION_PROB:  # mutation
             next_gen.append(parent1.mutate(new_eqn_params))
         elif flip <= CROSSOVER_PROB + MUTATION_PROB:  # crossover
             parent2 = random.choices(current_gen, weights)[0]
-            brood = parent1.crossover(parent2, brood=BROOD_SIZE)
-            next_gen.extend(brood)
+            semantics = calculate_percent_diff(parent1, parent2, prop=0.0001)
+
+            next_gen.extend(parent1.crossover(parent2))
         else:  # clone
             next_gen.append(parent1)
 
