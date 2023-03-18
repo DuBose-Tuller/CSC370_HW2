@@ -5,34 +5,33 @@ from tqdm import tqdm
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-# TODO fix issue where it stops on the last eval
 
 # Uncomment for dataset 1
-# dataset1 = pd.read_csv("dataset1.csv", header="infer")
-# inputs = np.array(dataset1["x"]).reshape(-1, 1) # dataset needs to be 2D
-# outputs = np.array(dataset1["f(x)"])
-# VARS = ["x"]
+dataset1 = pd.read_csv("dataset1.csv", header="infer")
+inputs = np.array(dataset1["x"]).reshape(-1, 1) # dataset needs to be 2D
+outputs = np.array(dataset1["f(x)"])
+VARS = ["x"]
 
 # Uncomment for dataset 2
-dataset2 = pd.read_csv("dataset2.csv", header="infer")
-inputs = np.array(dataset2[["x1", "x2", "x3"]])
-outputs = np.array(dataset2["y"])
-VARS = ["x", "y", "z"]
+# dataset2 = pd.read_csv("dataset2.csv", header="infer")
+# inputs = np.array(dataset2[["x1", "x2", "x3"]])
+# outputs = np.array(dataset2["y"])
+# VARS = ["x", "y", "z"]
 
-# Scale stuff
-inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (0, 100))
-inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (0, 100))
-inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (0, 100))
+# # Scale stuff
+# inputs[:, 0] = np.interp(inputs[:, 0], (inputs[:, 0].min(), inputs[:, 0].max()), (0, 100))
+# inputs[:, 1] = np.interp(inputs[:, 1], (inputs[:, 1].min(), inputs[:, 1].max()), (0, 100))
+# inputs[:, 2] = np.interp(inputs[:, 2], (inputs[:, 2].min(), inputs[:, 2].max()), (0, 100))
 
 
 new_eqn_params = {
     "one_operator": 0.3,
     "two_operators": 0.7,
     "val_is_x": 0.5,
-    "min_val": 0.1,
+    "min_val": -5,
     "max_val": 5,
     "max_depth": 3,
-    "is_real": True,
+    "is_real": False,
     "start_depth": 0,
     "variables": VARS,
 }
@@ -43,14 +42,14 @@ def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
 NUM_GENERATIONS = 10
-SIZE = 250
+SIZE = 100
 MUTATION_PROB = 0.15
 CROSSOVER_PROB = 0.5
-PARSIMONY = 1 # TODO fix so that it changes each generation as the MSE changes order of magnitude
-NUM_CONTESTANTS = 7
+PARSIMONY = 8 # TODO fix so that it changes each generation as the MSE changes order of magnitude
+NUM_CONTESTANTS = 4
 RANDOM_INJECTION = 0.15
-SEMANTIC_THRESHOLD = 0.1
-SEMANTIC_PROP = 0.05
+SEMANTIC_THRESHOLD = 0.00000001
+SEMANTIC_PROP = 0.0001
 
 current_gen = initialize(SIZE, new_eqn_params)
 best_in_each_gen = []
@@ -81,7 +80,7 @@ for t in tqdm(range(NUM_GENERATIONS)):
         weights.append(1/fitness)
 
     # Create the next gen
-    for _ in tqdm(current_gen):
+    for x in tqdm(current_gen):
         parent1 = random.choices(current_gen, weights)[0]
         flip = random.random()
         if flip <= MUTATION_PROB:  # mutation
@@ -103,6 +102,7 @@ for t in tqdm(range(NUM_GENERATIONS)):
 
     # Perform the selection tournament
     # TODO: it's currently based off of only MSE, maybe fix to include regularization
+    # TODO: prevent some of the same equations from being overly resampled
     selected = []
     for j in tqdm(range(SIZE)):
         if j < SIZE * RANDOM_INJECTION:
@@ -118,7 +118,7 @@ for t in tqdm(range(NUM_GENERATIONS)):
 
     # DEBUG: get this generation's best individual
     best_eqn = min(current_gen, key=lambda t: t.MSE)
-    print(f"After Generation {t}, the best equation is...\n{best_eqn.root}\nIt has an MSE of {x.MSE} which has {int(np.log10(x.MSE)//1)} digits.")
+    print(f"After Generation {t}, the best equation is...\n{best_eqn.root}\nIt has an MSE of {x.MSE} which has {int(np.log10(x.MSE)//1)+1} digits.")
     
 
 print(f"Final result: \n{best_eqn.root}\nMSE: {best_eqn.set_MSE(x_test, y_test, variables = VARS, set=False)}")

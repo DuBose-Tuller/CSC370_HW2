@@ -24,3 +24,9 @@ Dealing with the dataset:
 
 Selection Pressure:
 -maybe modify how we are weighting the dataset by 1/(MSE+PARSIMONY)
+
+Overfitting:
+-
+
+Changes over time:
+-focus more on mutation rather than crossover/diversity as we converge towards the solution
