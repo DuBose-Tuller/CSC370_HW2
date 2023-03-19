@@ -24,13 +24,13 @@ VARS = ["x"]
 
 
 new_eqn_params = {
-    "one_operator": 0.1,
-    "two_operators": 0.3,
-    "val_is_x": 0.5,
+    "one_operator": 0.2,
+    "two_operators": 0.5,
+    "val_is_x": 0.6,
     "min_val": -5,
     "max_val": 5,
     "max_depth": 2,
-    "is_real": False,
+     "is_real": False,
     "start_depth": 0,
     "variables": VARS,
 }
@@ -40,16 +40,16 @@ x_train, x_test, y_train, y_test = train_test_split(inputs, outputs, test_size =
 def initialize(size, params):
     return [Equation(params) for i in range(size)]
 
-NUM_GENERATIONS = 20
-SIZE = 200
-MUTATION_PROB = 0.2
-MUTATION_PROB_REGROW = 0.2
-CROSSOVER_PROB = 0.5
-PARSIMONY = 0.2 # multiplies the MSE by this time time the number of nodes as a reg penaly. 0 == off
-NUM_CONTESTANTS = 2 # 1 turns it off
-RANDOM_INJECTION = 0.0
+NUM_GENERATIONS = 1
+SIZE = 2000
+MUTATION_PROB = 0.4
+MUTATION_PROB_REGROW = .5
+CROSSOVER_PROB = 0.2
+PARSIMONY = 0.1 # multiplies the MSE by this times the number of nodes as a reg penaly. 0 == off
+NUM_CONTESTANTS = 1 # 1 turns it off
+RANDOM_INJECTION = 0
 SEMANTIC_THRESHOLD = -1 # 0 prevents exact duplicates
-SEMANTIC_PROP = 0.01
+SEMANTIC_PROP = 0.005
 
 current_gen = initialize(SIZE, new_eqn_params)
 best_in_each_gen = []
@@ -125,7 +125,8 @@ for t in tqdm(range(NUM_GENERATIONS)):
 
     # DEBUG: get this generation's best individual
     best_eqn = min(current_gen, key=lambda t: t.MSE)
-    print(f"After Generation {t}, the best equation is...\n{best_eqn.root}\nIt has an MSE of {x.MSE} which has {int(np.log10(x.MSE+0.001)//1)+1} digits.")
+
+    print(f"After Generation {t}, the best equation is...\n{best_eqn.root}\nIt has an MSE of {best_eqn.MSE} which has {int(np.log10(best_eqn.MSE+0.001)//1)+1} digits.")
     
 
 print(f"Final result: \n{best_eqn.root}\nMSE: {best_eqn.set_MSE(x_test, y_test, variables = VARS, set=False)}")
