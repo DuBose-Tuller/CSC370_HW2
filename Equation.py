@@ -98,7 +98,6 @@ class Equation:
             return self.mutate_change_val(params)
 
     def mutate_regrow(self, params):
-        # Get a list of all the value nodes, and change a random one
         equation = self.copy() # deep copy the tree
         mutation_point = random.choice(equation.nodes)
 
@@ -170,16 +169,16 @@ class Equation:
     def randNode(self):
         return random.choice(self.nodes)
 
-    def evaluate(self, inputs, variables, node):
+    def evaluate(self, input, variables, node):
         if node.value not in operators:
             for (i, var) in enumerate(variables):
                 if node.value == var:
-                    return inputs[i]
+                    return input[i]
             else:
                 return node.value
 
-        left = self.evaluate(inputs, variables, node.left)
-        right = self.evaluate(inputs, variables, node.right)
+        left = self.evaluate(input, variables, node.left)
+        right = self.evaluate(input, variables, node.right)
  
         op = node.value
         if op == "+":

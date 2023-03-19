@@ -9,19 +9,21 @@ new_eqn_params = {
     "val_is_x": 0.65,
     "min_val": 0,
     "max_val": 100,
-    "max_depth": 1,
+    "max_depth": 0,
     "is_real": False,
     "start_depth": 0,
     "variables": VARS,
 }
 
 eqn = Equation(new_eqn_params)
+eqn.root = Node("*", 0)
+eqn.root.left = Node("x", 1)
+eqn.root.right = Node("x", 1)
 
 print(eqn.root)
 
 dataset2 = pd.read_csv("dataset2.csv", header="infer")
-inputs = np.array(dataset2[["x1", "x2", "x3"]])
+inputs = np.array(dataset2[["x1"]])
 outputs = np.array(dataset2["y"])
 
-
-print(eqn.set_MSE(inputs, outputs, variables=VARS, set=False))
+print(eqn.set_MSE(inputs, outputs, set=False))
