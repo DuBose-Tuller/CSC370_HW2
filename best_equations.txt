@@ -1,21 +1,86 @@
-Final result: 
 '/'
-        '+'
+        '*'
+                '-'
+                                        'y'
+                                        'z'
+                '*'
+                        '/'
+                                '*'
+                                        'y'
+                '-'
+                        'y'
+                                        'z'
+                                '+'
+                                        9.035622111665525
+                                        'z'
+                        '*'
+        'x'
+                                'y'
+                0.8732345109663331
+
+
+It has an MSE of 1.376814288474723e+18 which has 19 digits.
+MSE: 3008705529581524.5
+(16 digits)
+
+Config:
+All 0-100 inputs scaling
+new_eqn_params = {
+    "one_operator": 0.3,
+    "two_operators": 0.6,
+    "val_is_x": 0.6,
+    "min_val": 0,
+    "max_val": 10,
+    "max_depth": 4,
+     "is_real": True,
+    "start_depth": 0,
+    "variables": VARS,
+}
+NUM_GENERATIONS = 8
+SIZE = 1000
+MUTATION_PROB = 0.2
+MUTATION_PROB_REGROW = .3
+CROSSOVER_PROB = 0.6
+PARSIMONY = 0.1 # multiplies the MSE by this times the number of nodes as a reg penaly. 0 == off
+NUM_CONTESTANTS = 7 # 1 turns it off
+RANDOM_INJECTION = 0.1
+SEMANTIC_THRESHOLD = 0.05 # 0 prevents exact duplicates
+SEMANTIC_PROP = 0.01
+
+No roulette sampling
+Simply SAC
+
+
+It has an MSE of 1.313275752716237e+18 which has 19 digits.
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 8/8 [1:04:42<00:00, 485.29s/it] 
+Final result: ████████████████████████████████████████████████████████████████████████████████████████████████████████| 8/8 [1:04:42<00:00, 570.90s/it] 
+'*'
+        '/'
+                '*'
+                        'y'
+                '*'
+                        'y'
+                        '+'
+                                '+'
+                                        'y'
+                                        6.344342721235288
+                                2.8971933430634245
                 '+'
-                        8.941660918875531
-                        'y'
+                        '/'
+                                1.9261265346124268
+                                7.063746727987207
+                        '*'
+                                '/'
+                                        'z'
+                        5.594319024222458
+                                'x'
+        '/'
+                '*'
+                        'x'
+                        6.084978313853578
                 '/'
-                        4.78306062758276
-                        4.193352432579724
-        '-'
-                '/'
-                        'y'
-                        'z'
-                '/'
-        6.602413561246942
-                        'y'
+                        8.647498172094583
+        'y'
 
-MSE: 108601504629547.48
-(15 digits)
-
-
+MSE: 2599245702739721.5
+(16 digits)
